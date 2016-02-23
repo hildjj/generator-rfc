@@ -56,7 +56,8 @@ module.exports = generators.Base.extend({
       name: this.pkg.name,
       description: this.pkg.description,
       version: this.pkg.version,
-      homepage: this.pkg.homepage
+      homepage: this.pkg.homepage,
+      keywords: this.pkg.keywords
     };
   },
   prompting: {
@@ -116,7 +117,7 @@ module.exports = generators.Base.extend({
       }, {
         name: 'keywords',
         message: 'Draft keywords (comma to split)',
-        when: !this.pkg.keywords,
+        when: !this.props.keywords,
         filter: function (words) {
           return words.split(/\s*,\s*/g);
         }
@@ -156,6 +157,9 @@ module.exports = generators.Base.extend({
         description: this.props.description,
         homepage: this.props.homepage,
         keywords: [],
+        scripts: {
+          start: "gulp"
+        },
         devDependencies: {
           del: "2.2",
           gulp: "3.9",

@@ -5,7 +5,9 @@ docname: <%= name %>
 date: <%= date %>
 category: std
 ipr: trust200902
-
+<% if (props.keywords) { %>keywords:
+<% for (var i=0; i<props.keywords.length; i++) {%> - <%= props.keywords[i] %>
+<% }} %>
 author:
  -
     ins: <%= props.authorIns %>

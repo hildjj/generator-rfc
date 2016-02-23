@@ -16,7 +16,7 @@ npm install -g yo generator-rfc
 mkdir draft-foo
 cd draft-foo
 yo rfc
-gulp
+npm start
 ```
 
 ## Installation
