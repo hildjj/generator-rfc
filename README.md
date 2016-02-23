@@ -11,11 +11,13 @@
 ```
 gem install kramdown-rfc2629
 pip install xml2rfc
-brew install npm
+brew install npm  # see: https://nodejs.org/en/ for downloads
 npm install -g yo generator-rfc
 mkdir draft-foo
 cd draft-foo
 yo rfc
+# answer some questions
+# lots of node modules get installed into the `node_modules` subdirectory
 npm start
 ```
 
@@ -59,12 +61,17 @@ _Note that this template will generate files in the current directory, so be
 sure to change to a new directory first if you don't want to overwrite existing
 files._
 
-Answer a couple of questions.  
+Answer a couple of questions.  Unless you specify `--skip-install` in the `yo`
+command, `npm install` will run automatically, populating the `node_modules`
+directory with all of the nodejs packages necessary to run the system.  Yes,
+there are a lot of them, but they install relatively quickly.  Node developers
+tend to make lots of tiny packages, and reuse more aggressively than other
+communities.
 
 Then start the server:
 
 ```
-gulp
+npm start
 ```
 
 Your default web browser will pop up with a skeleton RFC.  Edit the
