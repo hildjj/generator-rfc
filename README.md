@@ -6,8 +6,23 @@
 
 [yeoman]: http://yeoman.io/
 
+## Quick start
+
+```
+gem install kramdown-rfc2629
+pip install xml2rfc
+brew install npm
+npm install -g yo generator-rfc
+mkdir draft-foo
+cd draft-foo
+yo rfc
+gulp
+```
+
 ## Installation
-Make sure [yeoman][] and this package are installed:
+[Nodejs](https://nodejs.org/en/) is required.
+
+Use node's package manager to ensure [yeoman][] and this package are installed:
 
 ```
 npm install -g yo generator-rfc
