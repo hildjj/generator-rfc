@@ -1,0 +1,32 @@
+{
+  "name": "generator-rfc",
+  "version": "0.0.0",
+  "description": "Generate a gulp-based RFC editing environment",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hildjj/generator-rfc.git"
+  },
+  "files": [
+    "app"
+  ],
+  "keywords": [
+    "rfc",
+    "kramdown",
+    "rfc2629",
+    "xml2rfc",
+    "rfc7749",
+    "yeoman-generator"
+  ],
+  "author": "Joe Hildebrand <joe-github@cursive.net>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hildjj/generator-rfc/issues"
+  },
+  "homepage": "https://github.com/hildjj/generator-rfc#readme",
+  "dependencies": {
+    "inquirer-npm-name": "^1.0.0",
+    "lodash": "4.5",
+    "which": "^1.2.4",
+    "yeoman-generator": "0.22"
+  }
+}
