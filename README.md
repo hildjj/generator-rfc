@@ -4,7 +4,7 @@
 > markdown, including web server that does live refreshes of a web page as
 > the source changes.
 
-[yeoman]: http://gruntjs.com/project-scaffolding
+[yeoman]: http://yeoman.io/
 
 ## Installation
 Make sure [yeoman][] and this package are installed:
