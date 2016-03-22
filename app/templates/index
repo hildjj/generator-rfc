@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+    <meta charset="utf-8">
+    <title>
+      <%= name %>
+    </title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-fork-ribbon-css/0.2.0/gh-fork-ribbon.min.css" />
+<!--[if lt IE 9]>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-fork-ribbon-css/0.2.0/gh-fork-ribbon.ie.min.css" />
+<![endif]-->
+    <style>
+  body {
+    font-family: helvetica, sans-serif;
+    margin-left: 5em;
+  }
+    </style>
+  </head>
+  <body>
+    <a class="github-fork-ribbon" href="https://github.com/<%= repo %>" title="Fork me on GitHub">Fork me on GitHub</a>
+    <h2><%= name %></h2>
+    Editor's copy:
+    <ul>
+      <li><a href='<%= name %>.html'>HTML</a></li>
+      <li><a href='<%= name %>.txt'>Text</a></li>
+      <li><a href='<%= name %>.xml'>XML</a></li>
+    </ul>
+  </body>
+</html>

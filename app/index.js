@@ -2,12 +2,19 @@
 
 var fs = require('fs');
 var path = require('path');
+var tmp = require('tmp');
 
 var _ = require('lodash');
 var askName = require('inquirer-npm-name');
 var generators = require('yeoman-generator');
 var which = require('which');
 
+function abbrev(name) {
+  return name
+  .replace(/^draft-/, '')
+  .replace(/\.md$/, '')
+  .replace(/-/g, ' ');
+}
 module.exports = generators.Base.extend({
   constructor: function () {
     generators.Base.apply(this, arguments);
@@ -54,11 +61,28 @@ module.exports = generators.Base.extend({
     // Pre set the default props from the information we have at this point
     this.props = {
       name: this.pkg.name,
+      abbrev: this.pkg.abbrev,
       description: this.pkg.description,
       version: this.pkg.version,
-      homepage: this.pkg.homepage,
       keywords: this.pkg.keywords
     };
+
+    if (this.pkg.homepage) {
+      var m = this.pkg.homepage.match(/https:\/\/github.com\/([^\/]+)\/([^\/]+)/)
+      if (m) {
+        this.props.githubUser = m[1];
+        this.props.repo = m[1] + '/' + m[2];
+      }
+    }
+
+    if (!this.props.githubUser) {
+      var done = this.async();
+      var that = this;
+      this.user.github.username(function(er, nm) {
+        that.props.githubUser = nm;
+        done();
+      });
+    }
   },
   prompting: {
     askForModuleName: function () {
@@ -91,6 +115,11 @@ module.exports = generators.Base.extend({
         message: 'Description',
         when: !this.props.description
       }, {
+        name: 'abbrev',
+        message: 'Abbreviated Name',
+        when: !this.props.abbrev,
+        default: abbrev(this.props.name)
+      }, {
         name: 'authorName',
         message: 'Author\'s Name',
         when: !this.props.authorName,
@@ -119,8 +148,13 @@ module.exports = generators.Base.extend({
         message: 'Draft keywords (comma to split)',
         when: !this.props.keywords,
         filter: function (words) {
-          return words.split(/\s*,\s*/g);
+          return words.split(/\s*,\s*/g).filter(s => s.trim().length > 0);
         }
+      }, {
+        name: 'repo',
+        message: 'Github repository',
+        when: !this.props.repo,
+        default: this.props.githubUser + '/' + this.props.name
       }];
 
       this.prompt(prompts, function (props) {
@@ -144,6 +178,20 @@ module.exports = generators.Base.extend({
       );
     },
 
+    indexHTML: function () {
+      this.fs.copyTpl(
+        this.templatePath('index'),
+        this.destinationPath('index.html'),
+        {
+          date: this.now,
+          repo: this.props.repo,
+          name: _.kebabCase(this.props.name),
+          gen_name: this.gen_pkg.name,
+          gen_version: this.gen_pkg.version
+        }
+      );
+    },
+
     packageJSON: function () {
       var currentPkg = this.fs.readJSON(this.destinationPath('package.json'), {});
 
@@ -155,7 +203,14 @@ module.exports = generators.Base.extend({
           email: this.props.authorEmail
         },
         description: this.props.description,
-        homepage: this.props.homepage,
+        homepage: 'https://github.com/' + this.props.repo,
+        repository: {
+          type: 'git',
+          url: 'git+https://github.com/' + this.props.repo + '.git'
+        },
+        bugs: {
+          url: 'https://github.com/' + this.props.repo + '/issues'
+        },
         keywords: [],
         scripts: {
           start: "gulp"
@@ -165,7 +220,7 @@ module.exports = generators.Base.extend({
           gulp: "3.9",
           "gulp-live-server": "0.0",
           "gulp-rename": "1.2",
-          "gulp-run": "1.6",
+          "gulp-util": "3.0",
           open: "0.0",
           through2: "2.0"
         },
@@ -210,6 +265,7 @@ module.exports = generators.Base.extend({
         this.destinationPath(_.kebabCase(this.props.name) + ".md"),
         {
           date: this.now,
+          abbrev: this.props.abbrev,
           name: _.kebabCase(this.props.name),
           props: this.props,
           gen_name: this.gen_pkg.name,
@@ -221,30 +277,59 @@ module.exports = generators.Base.extend({
   install: function () {
     var done = this.async();
     var that = this;
-    which('git', function(er, path) {
+    which('git', function(er, git) {
       if (!er) {
         if (!fs.existsSync('.git')) {
-          that.spawnCommandSync('git', ['init'], {
+          that.spawnCommandSync(git, ['init'], {
             cwd: that.destinationPath()
           });
-          that.spawnCommandSync('git', ['add', '.'], {
+          that.spawnCommandSync(git, ['add', '.gitignore'], {
             cwd: that.destinationPath()
           });
-          that.spawnCommandSync('git', ['commit', '-m', 'initial yo commit'], {
+          that.spawnCommandSync(git, ['commit', '-m', 'initial yo commit'], {
             cwd: that.destinationPath()
           });
-          // TODO:
-          // * git remote add (to GitHub)
+          that.spawnCommandSync(git, ['checkout', '--orphan', 'gh-pages'], {
+            cwd: that.destinationPath()
+          });
+          that.spawnCommandSync(git, ['rm', '-f', '.gitignore'], {
+            cwd: that.destinationPath()
+          });
+          that.spawnCommandSync(git, ['add', 'index.html'], {
+            cwd: that.destinationPath()
+          });
+          that.spawnCommandSync(git, ['commit', '-m', 'initial yo commit'], {
+            cwd: that.destinationPath()
+          });
+          that.spawnCommandSync(git, ['checkout', 'master'], {
+            cwd: that.destinationPath()
+          });
+          that.fs.delete(that.destinationPath('index.html'));
+          that.spawnCommandSync(git, ['add', '.'], {
+            cwd: that.destinationPath()
+          });
+          that.spawnCommandSync(git, ['commit', '-m', 'initial yo commit'], {
+            cwd: that.destinationPath()
+          });
+          that.spawnCommandSync(git, ['remote', 'add', 'origin', 'git+https://github.com/' + that.props.repo + '.git'], {
+            cwd: that.destinationPath()
+          });
+          that.spawnCommandSync(git, ['worktree', 'add', 'output', 'gh-pages'], {
+            cwd: that.destinationPath()
+          });
         }
       } else {
         that.log('git not found.  Skipping "git init"');
       }
+      this.installDependencies({
+        npm: true,
+        bower: false,
+        skipInstall: this.options['skip-install']
+      });
       done();
     });
-    this.installDependencies({
-      npm: true,
-      bower: false,
-      skipInstall: this.options['skip-install']
-    });
+  },
+  end: function () {
+    this.log("Now run `npm start`.  A browser window should pop up.")
   }
 });

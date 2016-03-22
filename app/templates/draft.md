@@ -1,6 +1,6 @@
 ---
 title: <%= props.description %>
-abbrev: I-D
+abbrev: <%= props.abbrev %>
 docname: <%= name %>
 date: <%= date %>
 category: std
