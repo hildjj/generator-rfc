@@ -1,6 +1,6 @@
 {
   "name": "generator-rfc",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Generate a gulp-based RFC editing environment",
   "repository": {
     "type": "git",
