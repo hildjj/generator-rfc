@@ -24,10 +24,10 @@
   },
   "homepage": "https://github.com/hildjj/generator-rfc#readme",
   "dependencies": {
-    "inquirer-npm-name": "^1.0.0",
-    "lodash": "4.5",
-    "tmp": "0.0.28",
-    "which": "^1.2.4",
-    "yeoman-generator": "0.22"
+    "inquirer-npm-name": "2.0",
+    "lodash": "4.13",
+    "tmp": "0.0",
+    "which": "1.2",
+    "yeoman-generator": "0.24"
   }
 }

@@ -77,11 +77,10 @@ module.exports = generators.Base.extend({
 
     if (!this.props.githubUser) {
       var done = this.async();
-      var that = this;
       this.user.github.username(function(er, nm) {
-        that.props.githubUser = nm;
+        this.props.githubUser = nm;
         done();
-      });
+      }.bind(this));
     }
   },
   prompting: {
@@ -90,10 +89,7 @@ module.exports = generators.Base.extend({
         this.props.name = this.pkg.name || _.kebabCase(this.options.name);
         return;
       }
-
-      var done = this.async();
-
-      askName({
+      return askName({
         name: 'name',
         message: 'Draft Name',
         default: path.basename(process.cwd()),
@@ -101,15 +97,13 @@ module.exports = generators.Base.extend({
         validate: function (str) {
           return str.length > 0;
         }
-      }, this, function (name) {
-        this.props.name = name;
-        done();
-      }.bind(this));
+      }, this)
+      .then((answer) => {
+        this.props.name = answer.name;
+      })
     },
 
     askFor: function () {
-      var done = this.async();
-
       var prompts = [{
         name: 'description',
         message: 'Description',
@@ -157,10 +151,10 @@ module.exports = generators.Base.extend({
         default: this.props.githubUser + '/' + this.props.name
       }];
 
-      this.prompt(prompts, function (props) {
+      return this.prompt(prompts)
+      .then((props) => {
         this.props = _.merge(this.props, props);
-        done();
-      }.bind(this));
+      })
     },
   },
 
@@ -278,55 +272,56 @@ module.exports = generators.Base.extend({
     var done = this.async();
     var that = this;
     which('git', function(er, git) {
-      if (!er) {
-        if (!fs.existsSync('.git')) {
-          that.spawnCommandSync(git, ['init'], {
-            cwd: that.destinationPath()
-          });
-          that.spawnCommandSync(git, ['add', '.gitignore'], {
-            cwd: that.destinationPath()
-          });
-          that.spawnCommandSync(git, ['commit', '-m', 'initial yo commit'], {
-            cwd: that.destinationPath()
-          });
-          that.spawnCommandSync(git, ['checkout', '--orphan', 'gh-pages'], {
-            cwd: that.destinationPath()
-          });
-          that.spawnCommandSync(git, ['rm', '-f', '.gitignore'], {
-            cwd: that.destinationPath()
-          });
-          that.spawnCommandSync(git, ['add', 'index.html'], {
-            cwd: that.destinationPath()
-          });
-          that.spawnCommandSync(git, ['commit', '-m', 'initial yo commit'], {
-            cwd: that.destinationPath()
-          });
-          that.spawnCommandSync(git, ['checkout', 'master'], {
-            cwd: that.destinationPath()
-          });
-          that.fs.delete(that.destinationPath('index.html'));
-          that.spawnCommandSync(git, ['add', '.'], {
-            cwd: that.destinationPath()
-          });
-          that.spawnCommandSync(git, ['commit', '-m', 'initial yo commit'], {
-            cwd: that.destinationPath()
-          });
-          that.spawnCommandSync(git, ['remote', 'add', 'origin', 'git+https://github.com/' + that.props.repo + '.git'], {
-            cwd: that.destinationPath()
-          });
-          that.spawnCommandSync(git, ['worktree', 'add', 'output', 'gh-pages'], {
-            cwd: that.destinationPath()
-          });
-        }
-      } else {
-        that.log('git not found.  Skipping "git init"');
+      if (er) {
+        return that.log('git not found.  Skipping "git init"');
       }
-      this.installDependencies({
+      if (!fs.existsSync('.git')) {
+        that.spawnCommandSync(git, ['init'], {
+          cwd: that.destinationPath()
+        });
+        that.spawnCommandSync(git, ['add', '.gitignore'], {
+          cwd: that.destinationPath()
+        });
+        that.spawnCommandSync(git, ['commit', '-m', 'initial yo commit'], {
+          cwd: that.destinationPath()
+        });
+        that.spawnCommandSync(git, ['checkout', '--orphan', 'gh-pages'], {
+          cwd: that.destinationPath()
+        });
+        that.spawnCommandSync(git, ['rm', '-f', '.gitignore'], {
+          cwd: that.destinationPath()
+        });
+        that.spawnCommandSync(git, ['add', 'index.html'], {
+          cwd: that.destinationPath()
+        });
+        that.spawnCommandSync(git, ['commit', '-m', 'initial yo commit'], {
+          cwd: that.destinationPath()
+        });
+        that.spawnCommandSync(git, ['checkout', 'master'], {
+          cwd: that.destinationPath()
+        });
+        that.fs.delete(that.destinationPath('index.html'));
+        that.spawnCommandSync(git, ['add', '.'], {
+          cwd: that.destinationPath()
+        });
+        that.spawnCommandSync(git, ['commit', '-m', 'initial yo commit'], {
+          cwd: that.destinationPath()
+        });
+        that.spawnCommandSync(git, ['remote', 'add', 'origin', 'git+https://github.com/' + that.props.repo + '.git'], {
+          cwd: that.destinationPath()
+        });
+        that.spawnCommandSync(git, ['worktree', 'add', 'output', 'gh-pages'], {
+          cwd: that.destinationPath()
+        });
+      }
+      that.installDependencies({
         npm: true,
         bower: false,
-        skipInstall: this.options['skip-install']
+        skipInstall: that.options['skip-install'],
+        callback: () => {
+          done();
+        }
       });
-      done();
     });
   },
   end: function () {
